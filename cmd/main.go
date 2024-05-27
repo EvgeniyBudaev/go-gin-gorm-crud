@@ -18,9 +18,19 @@ import (
 func main() {
 	db, err := database.NewConnectionToDB()
 	if err != nil {
-		log.Println(err)
+		log.Printf("Connection to DB with ERROR %d", err)
+		return
 	}
-	db.Table("categories").AutoMigrate(&model.Category{})
+	err = db.Table("categories").AutoMigrate(&model.Category{})
+	if err != nil {
+		log.Printf("AutoMigrate categories with ERROR %d", err)
+		return
+	}
+	err = db.Table("products").AutoMigrate(&model.Product{})
+	if err != nil {
+		log.Printf("AutoMigrate products with ERROR %d", err)
+		return
+	}
 
 	validate := validator.New()
 	// Repository
