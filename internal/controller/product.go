@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"github.com/EvgeniyBudaev/go-gin-gorm-crud/internal/helper"
 	"github.com/EvgeniyBudaev/go-gin-gorm-crud/internal/http/request"
 	"github.com/EvgeniyBudaev/go-gin-gorm-crud/internal/http/response"
@@ -10,19 +11,22 @@ import (
 	"net/http"
 )
 
-type CategoryController struct {
-	categoryService services.CategoryService
+type ProductController struct {
+	productService services.ProductService
 }
 
-func NewCategoryController(categoryService services.CategoryService) *CategoryController {
-	return &CategoryController{categoryService: categoryService}
+func NewProductController(productService services.ProductService) *ProductController {
+	return &ProductController{productService: productService}
 }
 
-func (controller *CategoryController) Create(ctx *gin.Context) {
-	createCategoryRequest := request.CreateCategoryRequest{}
-	err := ctx.ShouldBindJSON(&createCategoryRequest)
+func (controller *ProductController) Create(ctx *gin.Context) {
+	createProductRequest := request.CreateProductRequest{}
+	err := ctx.ShouldBindJSON(&createProductRequest)
 	helper.ErrorPanic(err)
-	controller.categoryService.Create(createCategoryRequest)
+	categoryID, err := uuid.Parse(createProductRequest.CategoryID.String())
+	helper.ErrorPanic(err)
+	createProductRequest.CategoryID = &categoryID
+	controller.productService.Create(createProductRequest)
 	webResponse := response.Response{
 		Code:   http.StatusCreated,
 		Status: "Ok",
@@ -32,14 +36,14 @@ func (controller *CategoryController) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, webResponse)
 }
 
-func (controller *CategoryController) Update(ctx *gin.Context) {
-	updateCategoryRequest := request.UpdateCategoryRequest{}
-	err := ctx.ShouldBindJSON(&updateCategoryRequest)
-	categoryId := ctx.Param("id")
-	id, err := uuid.Parse(categoryId)
+func (controller *ProductController) Update(ctx *gin.Context) {
+	updateProductRequest := request.UpdateProductRequest{}
+	err := ctx.ShouldBindJSON(&updateProductRequest)
+	productId := ctx.Param("id")
+	id, err := uuid.Parse(productId)
 	helper.ErrorPanic(err)
-	updateCategoryRequest.ID = &id
-	controller.categoryService.Update(updateCategoryRequest)
+	updateProductRequest.ID = &id
+	controller.productService.Update(updateProductRequest)
 	webResponse := response.Response{
 		Code:   http.StatusCreated,
 		Status: "Ok",
@@ -49,11 +53,11 @@ func (controller *CategoryController) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, webResponse)
 }
 
-func (controller *CategoryController) Delete(ctx *gin.Context) {
+func (controller *ProductController) Delete(ctx *gin.Context) {
 	categoryId := ctx.Param("id")
 	id, err := uuid.Parse(categoryId)
 	helper.ErrorPanic(err)
-	controller.categoryService.Delete(&id)
+	controller.productService.Delete(&id)
 	webResponse := response.Response{
 		Code:   http.StatusOK,
 		Status: "Ok",
@@ -63,26 +67,27 @@ func (controller *CategoryController) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, webResponse)
 }
 
-func (controller *CategoryController) FindById(ctx *gin.Context) {
-	categoryId := ctx.Param("id")
-	id, err := uuid.Parse(categoryId)
+func (controller *ProductController) FindById(ctx *gin.Context) {
+	productId := ctx.Param("id")
+	id, err := uuid.Parse(productId)
 	helper.ErrorPanic(err)
-	categoryResponse := controller.categoryService.FindById(&id)
+	productResponse := controller.productService.FindById(&id)
 	webResponse := response.Response{
 		Code:   http.StatusOK,
 		Status: "Ok",
-		Data:   categoryResponse,
+		Data:   productResponse,
 	}
 	ctx.Header("Content-Type", "application/json")
 	ctx.JSON(http.StatusOK, webResponse)
 }
 
-func (controller *CategoryController) FindAll(ctx *gin.Context) {
-	categoryListResponse := controller.categoryService.FindAll()
+func (controller *ProductController) FindAll(ctx *gin.Context) {
+	productListResponse := controller.productService.FindAll()
+	fmt.Println(productListResponse)
 	webResponse := response.Response{
 		Code:   http.StatusOK,
 		Status: "Ok",
-		Data:   categoryListResponse,
+		Data:   productListResponse,
 	}
 	ctx.Header("Content-Type", "application/json")
 	ctx.JSON(http.StatusOK, webResponse)
